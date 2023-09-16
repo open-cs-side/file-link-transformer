@@ -6,8 +6,8 @@ import java.io.IOException;
 
 public interface FileUploadService {
 
-    void upload(MultipartFile file);
+    String upload(MultipartFile file);
 
-    void read();
+    byte[] read(String fileId);
 
 }

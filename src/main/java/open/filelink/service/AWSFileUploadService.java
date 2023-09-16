@@ -1,42 +1,42 @@
 package open.filelink.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import open.filelink.config.AwsS3Client;
-import open.filelink.entity.File;
-import open.filelink.repository.LinkRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AWSFileUploadService implements FileUploadService {
 
-    private static final String FILE_KEY_SEPARTOR = "_";
-
+    private final static int CONFLICT_MAX_RETRIES = 3;
     private final AwsS3Client client;
 
-    private final LinkRepository linkRepository;
 
     @SneakyThrows
     @Override
-    public void upload(MultipartFile file) {
-        String encodedFilename = URLEncoder.encode(file.getOriginalFilename(), StandardCharsets.UTF_8.toString());
-        Long fileKey = linkRepository.save(new File(encodedFilename)).getFileKey();
+    public String upload(MultipartFile file) {
+        int retries = 0;
+        String uuid;
 
-        String uniqueFilePath = encodedFilename + FILE_KEY_SEPARTOR + fileKey;
-
-        client.uploadObject(uniqueFilePath, file);
+        while (retries < CONFLICT_MAX_RETRIES) {
+            uuid = UUID.randomUUID().toString();
+            if (!client.isObjectExist(uuid)) {
+                client.uploadObject(uuid, file);
+                return uuid;
+            }
+            retries++;
+        }
+        return null;
     }
 
     @Override
-    public void read() {
-
+    public byte[] read(String fileId) {
+        return client.findObject(fileId);
     }
 }
