@@ -2,6 +2,8 @@ package open.filelink.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import open.filelink.dto.ApiResponse;
+import open.filelink.dto.FileIdResponse;
 import open.filelink.service.FileUploadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +27,11 @@ public class LinkController {
     }
 
     @PostMapping
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<FileIdResponse> uploadFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File does not Exist");
+            return ApiResponse.fail("File does not Exist");
         }
         String fileId = fileUploadService.upload(file);
-        return ResponseEntity.ok(fileId);
+        return ApiResponse.success(new FileIdResponse(fileId));
     }
 }
