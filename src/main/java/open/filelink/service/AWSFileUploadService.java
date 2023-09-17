@@ -19,8 +19,10 @@ import java.util.stream.IntStream;
 public class AWSFileUploadService implements FileUploadService {
 
     private static final String EMPTY_IMAGE_PATH = "classpath:static/empty_file.png";
-    private final static int CONFLICT_MAX_RETRIES = 3;
+    private static final int CONFLICT_MAX_RETRIES = 3;
+
     private final AwsS3Client client;
+
     private final ResourceLoader resourceLoader;
 
 
