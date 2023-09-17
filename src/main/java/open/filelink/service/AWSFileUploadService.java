@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -24,20 +26,23 @@ public class AWSFileUploadService implements FileUploadService {
 
     @Override
     public String upload(MultipartFile file) {
-        int retries = 0;
-        String uuid;
+        return IntStream.range(0, CONFLICT_MAX_RETRIES)
+                .mapToObj((retry) -> attemptUpload(retry, file))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
+    }
 
-        while (retries < CONFLICT_MAX_RETRIES) {
-            uuid = UUID.randomUUID().toString();
+
+    private String attemptUpload(int retry, MultipartFile file) {
+        String uuid = UUID.randomUUID().toString();
+        try {
             if (!client.isObjectExist(uuid)) {
-                try {
-                    client.uploadObject(uuid, file);
-                    return uuid;
-                } catch (Exception e) {
-                    log.error("fail to upload file to s3. retry [{}/{}] ", retries + 1, CONFLICT_MAX_RETRIES, e);
-                }
+                client.uploadObject(uuid, file);
+                return uuid;
             }
-            retries++;
+        } catch (Exception e) {
+            log.error("Failed to upload file to S3. Retry [{}]", retry, e);
         }
         return null;
     }
@@ -47,7 +52,7 @@ public class AWSFileUploadService implements FileUploadService {
         return Optional.ofNullable(client.findObject(fileId))
                 .orElseGet(() -> {
                     try {
-                        log.info("unable to find file : {}",fileId);
+                        log.info("unable to find file : {}", fileId);
                         return resourceLoader.getResource(EMPTY_IMAGE_PATH)
                                 .getContentAsByteArray();
                     } catch (IOException e) {

@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties
 public class FilelinkApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(FilelinkApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(FilelinkApplication.class, args);
+    }
 
 }
