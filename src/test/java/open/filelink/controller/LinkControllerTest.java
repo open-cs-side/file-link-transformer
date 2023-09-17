@@ -1,5 +1,6 @@
 package open.filelink.controller;
 
+import open.filelink.dto.StatusCode;
 import open.filelink.service.FileUploadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.UUID;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 class LinkControllerTest {
@@ -42,7 +42,7 @@ class LinkControllerTest {
 
         mockMvc.perform(get("/api/file/{id}", fileId))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().bytes(fileData));
+                .andExpect(content().bytes(fileData));
 
         verify(fileUploadService, times(1)).read(fileId);
     }
@@ -58,7 +58,8 @@ class LinkControllerTest {
                                 .file(multipartFile)
                                 .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string(fileId));
+                .andExpect(jsonPath("$.data.fileId").value(fileId))
+                .andExpect(jsonPath("$.code").value(StatusCode.SUCCESS.getCode()));
 
         verify(fileUploadService, times(1)).upload(multipartFile);
     }
