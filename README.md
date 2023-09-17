@@ -7,7 +7,7 @@
 - Java Development Kit (JDK) 17+
 - Gradle Build Tool
 - Dependency
-    - Spring Boot
+    - Spring Boot Web MVC
     - AWS S3 SDK
     - Lombok
 
