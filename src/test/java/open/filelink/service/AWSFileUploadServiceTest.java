@@ -54,6 +54,7 @@ class AWSFileUploadServiceTest {
     }
 
     @Test
+    @DisplayName("파일이 조회됩니다")
     void shouldReadFile() {
         byte[] file = new byte[10];
         doReturn(file).when(client).findObject(anyString());
@@ -64,6 +65,7 @@ class AWSFileUploadServiceTest {
     }
 
     @Test
+    @DisplayName("파일이 존재하지 않는 경우 빈 파일 아이콘이 들어간 이미지 파일을 반환합니다")
     void shouldReturnEmptyFile_whenFileDoesNotExist() throws IOException {
         ClassPathResource emptyFile = new ClassPathResource("static/empty_file.png");
         doReturn(emptyFile).when(loader).getResource("classpath:static/empty_file.png");
